@@ -15,5 +15,4 @@ cargo +1.99.1 run --locked --manifest-path manifest-check/Cargo.toml -- manifest
 python3 make_sounds.py
 cargo +1.99.1 build --locked --release --target wasm32-unknown-unknown
 python3 package.py
-version=$(python3 -c 'import json; print(json.load(open("manifest.json"))["version"])')
-nix-store --dump package-root > "rolid-clock-$version.nar"
+python3 scripts/build_variants.py

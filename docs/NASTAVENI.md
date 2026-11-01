@@ -59,10 +59,10 @@ Zmeškané efekty se nedohánějí a restart stejnou hodinovou událost neopakuj
 Lokální LED efekty jiných widgetů a systémové nastavení mohou mít přednost.
 Widget musí běžet; SDK timer funguje i mimo právě zobrazenou scénu.
 
-## Vlastní MP3 (od 0.5.1)
+## Vlastní MP3 (od 0.5.0)
 Widget umí volat místní službu rolid-audio, která přehrává MP3 přes madplay.
 Instalace a diagnostika jsou v ../audio-service/README.md a v samostatném
-archivu rolid-audio-0.5.1.tar.gz. Vyžaduje jednorázovou instalaci přes SSH.
+archivu rolid-audio-0.6.0.tar.gz. Vyžaduje jednorázovou instalaci přes SSH.
 Bez této služby je výchozí režim bez zvuku a po pokusu zobrazí chybu.
 Hodinový gong, vlastní budíky a tlačítko Zvuk používají příslušné hlasitosti.
 Odložení/Zastavit ukončí přehrávání. Při každém opakování budíku po 5 s
@@ -75,3 +75,7 @@ hostu bez feature audio stále nic nepřehraje. Přehrání MP3 tlačítkem Zvuk
 oprávnění CGI v instalátoru. Dlouhodobé buzení a start po restartu zatím
 nejsou na zařízení samostatně ověřeny.
 
+
+## Jazyk (0.6.0)
+
+Volba Jazyk mění displej, nainstalovaná jazyková varianta určuje texty formuláře. Anglické ekvivalenty pravidel jsou v ../README.md; obě syntaxe lze používat v každém jazyce.

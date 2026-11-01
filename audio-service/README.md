@@ -1,14 +1,14 @@
-# RoliD audio service 0.5.1
+# RoliD audio service 0.6.0
 
 Pro Braiins Deck s uhttpd, madplay a OpenWrt procd. Jednorázová instalace
-přes SSH doplňuje přehrávání vlastního MP3 do RoliD Clock 0.5.1.
+přes SSH doplňuje přehrávání vlastního MP3 do RoliD Clock 0.6.0.
 
 ## Instalace
 Na počítači, ve složce se staženým archivem:
 
-    ssh root@IP_DECKU 'mkdir -p /tmp/rolid-audio-051 && tar -xz -C /tmp/rolid-audio-051 && sh /tmp/rolid-audio-051/install.sh' < rolid-audio-0.5.1.tar.gz
+    ssh root@IP_DECKU 'mkdir -p /tmp/rolid-audio-060 && tar -xz -C /tmp/rolid-audio-060 && sh /tmp/rolid-audio-060/install.sh' < rolid-audio-0.6.0.tar.gz
 
-Pak nahrajte rolid-clock-0.5.1.nar přes Install Widget a stiskněte Zvuk.
+Pak nahrajte rolid-clock-0.6.0-cz.nar (nebo variantu en/de/es) přes Install Widget a stiskněte Zvuk.
 Volba „Přehrávat vlastní MP3 přes místní službu“ je standardně zapnutá.
 Gong každou hodinu má vlastní vypínač, který je potřeba zapnout, pokud je vypnutý.
 Hlasitost 75 % odpovídá madplay -A -10, 88 % přibližně -5 dB. Nula je ticho.

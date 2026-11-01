@@ -21,7 +21,7 @@ with tempfile.TemporaryDirectory() as temp:
     (package / 'install.sh').write_text(script)
     run = subprocess.run(['sh', str(package / 'install.sh')], env={**os.environ, 'PATH': str(tools) + ':' + os.environ['PATH']}, capture_output=True, text=True, timeout=10)
     assert run.returncode != 0, run.stdout
-    assert 'Kontrola CGI selhala' in run.stderr, run.stderr
+    assert 'CGI check failed' in run.stderr, run.stderr
     cgi = data / 'rolid-audio/www/cgi-bin/audio'
     assert stat.S_ISREG(cgi.stat().st_mode)
     assert cgi.stat().st_mode & stat.S_IXOTH, 'uhttpd rejects CGI without S_IXOTH with HTTP 403'

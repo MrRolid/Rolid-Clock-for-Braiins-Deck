@@ -1,3 +1,4 @@
+use crate::i18n::Lang;
 use crate::model::{Alarm, Engine, Occurrence, Saved, countdown, gong_allowed, parse_alarm, upcoming};
 use bmc_wasm_sdk::*;
 use chrono::{Datelike, TimeZone, Timelike};
@@ -105,11 +106,12 @@ fn persist(s: &State) {
 }
 fn load_config(s: &mut State) {
     let p = params::current();
+    let lang = Lang::new(p.get_str("language").unwrap_or("cz"));
     let system = system::current();
     let zone = system.timezone().unwrap_or("UTC");
     s.errors.clear();
     s.zone = zone.parse().unwrap_or_else(|_| {
-        s.errors.push(format!("Neznámé pásmo {zone}; používám UTC"));
+        s.errors.push(format!("{} {zone}; {}",lang.text("zone"),lang.text("utc")));
         chrono_tz::UTC
     });
     s.alarms.clear();
@@ -125,15 +127,17 @@ fn load_config(s: &mut State) {
                     .to_owned()
             };
             if let Some(time)=o.get("time").and_then(|v|v.as_str()) {
-                match parse_alarm(index as i32+1,time,&t("repeat","Po-Pa"),&t("name","")) {
+                let name=t("name","");
+                let name=if name.trim().is_empty(){format!("{} {}",lang.text("alarm"),index+1)}else{name};
+                match parse_alarm(index as i32+1,time,&t("repeat","Po-Pa"),&name) {
                     Ok(a)=>{if a.enabled{s.alarms.push(a);}},
-                    Err(e)=>s.errors.push(e),
+                    Err(e)=>s.errors.push(lang.error(&e)),
                 }
                 continue;
             }
             let a = Alarm {
                 id: i("id", 0),
-                name: t("name", "Budík"),
+                name: t("name", lang.text("alarm")),
                 enabled: b("enabled", true),
                 mode: t("mode", "weekly"),
                 hour: i("hour", 7) as u32,
@@ -156,11 +160,11 @@ fn load_config(s: &mut State) {
                 continue;
             }
             if s.alarms.iter().any(|x| x.id == a.id) {
-                s.errors.push(format!("Duplicitní ID budíku {}", a.id));
+                s.errors.push(format!("{} {}",lang.text("duplicate"), a.id));
                 continue;
             }
             if let Err(err) = a.validate() {
-                s.errors.push(err);
+                s.errors.push(lang.error(&err));
                 continue;
             }
             s.alarms.push(a);
@@ -272,6 +276,7 @@ fn short(s: &str, limit: usize) -> String {
 #[unsafe(no_mangle)]
 pub extern "C" fn render(_delta: u32) {
     let p = params::current();
+    let lang = Lang::new(p.get_str("language").unwrap_or("cz"));
     let vp = widget_viewport();
     let t = now();
     STATE.with_borrow_mut(|s| {
@@ -280,8 +285,8 @@ pub extern "C" fn render(_delta: u32) {
         let seconds=enabled(&p,"show_seconds",true);
         lines.push((local.format(if seconds {"%H:%M:%S"}else{"%H:%M"}).to_string(),integer(&p,"font_size",160,24,240) as u32,color(&p,"color","cyan")));
         let mut date_parts=Vec::new();
-        if enabled(&p,"show_weekday",true){date_parts.push(["pondělí","úterý","středa","čtvrtek","pátek","sobota","neděle"][local.weekday().num_days_from_monday() as usize].to_owned());}
-        if enabled(&p,"show_date",true){date_parts.push(local.format("%d. %m. %Y").to_string());}
+        if enabled(&p,"show_weekday",true){date_parts.push(lang.weekday(local.weekday().num_days_from_monday() as usize).to_owned());}
+        if enabled(&p,"show_date",true){date_parts.push(local.format(lang.date_format()).to_string());}
         if !date_parts.is_empty(){lines.push((date_parts.join(" · "),integer(&p,"date_size",32,14,80) as u32,color(&p,"date_color","white")));}
         let mut preview=upcoming(&s.alarms,&s.engine.saved,t,s.zone,5);
         let mut next=s.engine.next_alarm(t);
@@ -295,20 +300,20 @@ pub extern "C" fn render(_delta: u32) {
         }
         preview.sort_by_key(|o|o.at);preview.truncate(5);
         if !s.engine.saved.active.is_empty() {
-            lines.push((format!("BUDÍK: {}",short(&s.engine.saved.active.iter().map(|a|a.name.clone()).collect::<Vec<_>>().join(" + "),32)),28,Color::from_hex(0xffbf47)));
+            lines.push((format!("{}: {}",lang.text("active"),short(&s.engine.saved.active.iter().map(|a|a.name.clone()).collect::<Vec<_>>().join(" + "),32)),28,Color::from_hex(0xffbf47)));
         } else if enabled(&p,"show_countdown",true) {
-            let label=next.map(|a|format!("{} · za {}",short(&a.name,24),countdown(a.at-t))).unwrap_or_else(||"Žádný další budík".into());
+            let label=next.map(|a|format!("{} · {} {}",short(&a.name,24),lang.text("in"),countdown(a.at-t))).unwrap_or_else(||lang.text("no_next").into());
             lines.push((label,integer(&p,"countdown_size",26,14,56) as u32,color(&p,"countdown_color","amber")));
         }
         if let Some(error)=s.errors.first(){lines.push((short(error,if vp.width<500 {38}else{65}),18,Color::from_hex(0xff6464)));}
-        if !s.timer_ok {lines.push(("Časovač není dostupný – budíky neběží".into(),18,Color::from_hex(0xff6464)));}
+        if !s.timer_ok {lines.push((lang.text("no_timer").into(),18,Color::from_hex(0xff6464)));}
         if enabled(&p,"use_audio_service",true) {
             BRIDGE.with_borrow(|b|{
-                if b.error {lines.push(("Zvuk: služba nedostupná – zkontroluj instalaci".into(),14,Color::from_hex(0xff6464)));}
-                else if !b.contacted {lines.push(("Zvuk: vyzkoušej tlačítko Zvuk".into(),14,Color::from_hex(0xffbf47)));}
+                if b.error {lines.push((lang.text("audio_error").into(),14,Color::from_hex(0xff6464)));}
+                else if !b.contacted {lines.push((lang.text("audio_test").into(),14,Color::from_hex(0xffbf47)));}
             });
         } else if (!s.alarms.is_empty() || enabled(&p,"gong_enabled",false)) && !enabled(&p,"sound_verified",false) {
-            lines.push(("Zvuk přes SDK není ověřen".into(),14,Color::from_hex(0xffbf47)));
+            lines.push((lang.text("sdk").into(),14,Color::from_hex(0xffbf47)));
         }
         let active=!s.engine.saved.active.is_empty();
         let controls=active || enabled(&p,"show_test_button",true);
@@ -325,20 +330,20 @@ pub extern "C" fn render(_delta: u32) {
         children.push(spacer(1.0));
         if active {
             children.push(row(props!(gap:8.0),[
-                button!("stop","Zastavit",style:Danger,size:Small),
-                button!("snooze",format!("Odložit {} min",integer(&p,"snooze_minutes",5,1,60)),style:Secondary,size:Small),
+                button!("stop",lang.text("stop"),style:Danger,size:Small),
+                button!("snooze",format!("{} {} min",lang.text("snooze"),integer(&p,"snooze_minutes",5,1,60)),style:Secondary,size:Small),
             ]));
-        } else if controls {children.push(row(props!(gap:8.0),[button!("test_led","Světlo",style:Secondary,size:Small),button!("test_rainbow","Duha",style:Secondary,size:Small),button!("test","Zvuk",style:Secondary,size:Small)]));}
+        } else if controls {children.push(row(props!(gap:8.0),[button!("test_led",lang.text("light"),style:Secondary,size:Small),button!("test_rainbow",lang.text("rainbow"),style:Secondary,size:Small),button!("test",lang.text("sound"),style:Secondary,size:Small)]));}
         let main=col(props!(width:main_width,height:vp.height as f32-16.0,gap:4.0,cross_align:CrossAlign::Center),children);
         let mut columns=Vec::new();
         if sidebar>0.0 {
-            let mut badges=vec![text("BUDÍKY",style!(size:12,color:Color::from_hex(0x94a3b8)))];
+            let mut badges=vec![text(lang.text("alarms"),style!(size:12,color:Color::from_hex(0x94a3b8)))];
             for (index,o) in preview.iter().enumerate(){
                 let at=s.zone.timestamp_opt(o.at,0).single().unwrap();
-                let label=format!("{} {}:{:02}",["Po","Út","St","Čt","Pá","So","Ne"][at.weekday().num_days_from_monday() as usize],at.hour(),at.minute());
+                let label=format!("{} {}:{:02}",lang.short_day(at.weekday().num_days_from_monday() as usize),at.hour(),at.minute());
                 badges.push(col(props!(width:sidebar,height:((vp.height as f32-64.0)/5.0).min(64.0),padding:4.0,border_radius:8.0,background:Color::from_hex(if index==0{0x173545}else{0x17202e}),cross_align:CrossAlign::Center),[spacer(1.0),text(label,style!(size:if sidebar<100.0{16}else{22},color:Color::from_hex(if index==0{0xffbf47}else{0xcbd5e1}),weight:FontWeight::SEMIBOLD)),spacer(1.0)]));
             }
-            if preview.is_empty(){badges.push(text("Žádný",style!(size:14,color:Color::from_hex(0x94a3b8))));}
+            if preview.is_empty(){badges.push(text(lang.text("none"),style!(size:14,color:Color::from_hex(0x94a3b8))));}
             columns.push(col(props!(width:sidebar,height:vp.height as f32-16.0,gap:4.0,cross_align:CrossAlign::Center),badges));
         }
         columns.push(main);

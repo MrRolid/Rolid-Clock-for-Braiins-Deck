@@ -1,6 +1,6 @@
 {
   "uid": "484ba68d-7f6b-4ccd-b415-ef64a1f731b1",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "name": "RoliD Clock",
   "description": "Hodiny, den a datum, pět nejbližších budíků, noční oranžové RGB a půlnoční duha.",
   "author": {
@@ -19,6 +19,30 @@
     }
   ],
   "params": {
+    "language": {
+      "name": "Jazyk displeje / Language / Sprache / Idioma",
+      "description": "Mění displej; jazyk formuláře určuje nainstalovaná varianta .nar.",
+      "type": "string",
+      "default_value": "cz",
+      "enum_values": [
+        {
+          "value": "cz",
+          "label": "Čeština"
+        },
+        {
+          "value": "en",
+          "label": "English"
+        },
+        {
+          "value": "de",
+          "label": "Deutsch"
+        },
+        {
+          "value": "es",
+          "label": "Español"
+        }
+      ]
+    },
     "color": {
       "name": "Barva času",
       "description": "HEX RRGGBB nebo #RRGGBB; lze i cyan, white, green, amber, red, blue, purple, pink.",
@@ -62,12 +86,12 @@
       "unit": "px"
     },
     "show_weekday": {
-      "name": "Zobrazit dne v týdnu",
+      "name": "Zobrazit den v týdnu",
       "type": "boolean",
       "default_value": true
     },
     "show_countdown": {
-      "name": "Zobrazit odpočtu",
+      "name": "Zobrazit odpočet",
       "type": "boolean",
       "default_value": true
     },

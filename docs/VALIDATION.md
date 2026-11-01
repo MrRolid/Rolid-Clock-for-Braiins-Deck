@@ -1,20 +1,16 @@
-# Ověření vydání 0.5.1
+# Validation 0.6.0 — 2026-11-01
 
-Datum: 2026-11-01.
+- Rust scheduling/model tests: 13 passed, including English/Czech rule equivalence.
+- Native manifest parser regression tests: 2 passed.
+- All four generated manifests accepted by the native Deck parser.
+- WASM tests: original scenarios plus EN/DE/ES/CZ at four viewport sizes passed.
+- Date, weekday, controls, preview labels, audio and validation errors, and live language switching checked.
+- CGI and isolated installer tests passed; CGI is executable as required by uhttpd.
+- Shell syntax checks passed.
+- Four NAR archives restored and compared against package trees without differences.
+- All NARs have the same UUID and identical WASM; their manifests select the language.
 
-- Sestavení WASM v release režimu: úspěšné.
-- Oficiální parser manifestu: úspěšné.
-- Rust model: 12/12 testů.
-- Parser manifestu: 2/2 testů včetně regrese unique_items.
-- Wasmtime 50.0.1: všechny scénáře ve tests/smoke.py prošly.
-- Izolovaný shell CGI: všechny scénáře tests/audio_service.py prošly.
-- Izolovaný instalátor: CGI má S_IXOTH (755), soukromý kořen 700, HTTP chyba je vypsána.
-- Shell syntaxe: install.sh, init služba, CGI a stop.sh prošly.
-- NAR: dump → restore → diff bez rozdílů.
-
-Na fyzickém zařízení uživatel potvrdil RGB test a vlastní MP3 tlačítkem Zvuk
-ve verzi 0.5.0 po ruční opravě CGI na 755. Verze 0.5.1 obsahuje tuto opravu
-v instalátoru; logika widgetu se nemění. Nový instalační archiv jako celek
-zatím nebyl znovu spuštěn na Decku. Restart celého zařízení a dlouhodobé buzení
-zatím nejsou samostatně potvrzené. GitHub Actions workflow je připravený,
-na GitHubu dosud neběžel; jeho build/test příkazy byly provedeny lokálně.
+Tests inspect the emitted UI tree; they are not screenshot/physical rendering tests.
+GitHub Actions is prepared but has not run on GitHub. Hardware RGB and MP3
+were confirmed before localization. Physical localized layout, reboot autostart
+and long-duration alarms still need hardware verification.

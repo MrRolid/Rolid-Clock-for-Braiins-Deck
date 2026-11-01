@@ -149,13 +149,13 @@ pub fn parse_alarm(id: i32, time: &str, rule: &str, name: &str) -> Result<Alarm,
     match parts.as_slice() {
         ["vyp"]|["off"]=>{a.enabled=false;a.mode="daily".into();},
         ["denne"]|["daily"]=>a.mode="daily".into(),
-        ["jednou",date]=>{a.mode="once".into();a.date=chrono::NaiveDate::parse_from_str(date,"%Y-%m-%d").ok();},
-        ["mesicne",day]=>{a.mode="monthly".into();a.day=day.parse().map_err(|_|fail())?;},
-        ["rocne",date]=>{a.mode="yearly".into();let (d,m)=date.split_once('.').ok_or_else(fail)?;a.day=d.parse().map_err(|_|fail())?;a.month=m.trim_end_matches('.').parse().map_err(|_|fail())?;},
-        [unit,n,date] if ["dny","hodiny","minuty"].contains(unit)=>{a.mode=match *unit {"dny"=>"days","hodiny"=>"hours",_=>"minutes"}.into();a.interval=n.parse().map_err(|_|fail())?;a.date=chrono::NaiveDate::parse_from_str(date,"%Y-%m-%d").ok();},
+        ["jednou",date]|["once",date]=>{a.mode="once".into();a.date=chrono::NaiveDate::parse_from_str(date,"%Y-%m-%d").ok();},
+        ["mesicne",day]|["monthly",day]=>{a.mode="monthly".into();a.day=day.parse().map_err(|_|fail())?;},
+        ["rocne",date]|["yearly",date]=>{a.mode="yearly".into();let (d,m)=date.split_once('.').ok_or_else(fail)?;a.day=d.parse().map_err(|_|fail())?;a.month=m.trim_end_matches('.').parse().map_err(|_|fail())?;},
+        [unit,n,date] if ["dny","hodiny","minuty","days","hours","minutes"].contains(unit)=>{a.mode=match *unit {"dny"|"days"=>"days","hodiny"|"hours"=>"hours",_=>"minutes"}.into();a.interval=n.parse().map_err(|_|fail())?;a.date=chrono::NaiveDate::parse_from_str(date,"%Y-%m-%d").ok();},
         _=>{
-            let days=if parts.len()==1 {parts[0]} else if parts.len()==4 && parts[1]=="tydny" {a.interval=parts[2].parse().map_err(|_|fail())?;a.date=chrono::NaiveDate::parse_from_str(parts[3],"%Y-%m-%d").ok();parts[0]} else{return Err(fail())};
-            let index=|d:&str|["po","ut","st","ct","pa","so","ne"].iter().position(|x|*x==d);
+            let days=if parts.len()==1 {parts[0]} else if parts.len()==4 && ["tydny","weeks"].contains(&parts[1]) {a.interval=parts[2].parse().map_err(|_|fail())?;a.date=chrono::NaiveDate::parse_from_str(parts[3],"%Y-%m-%d").ok();parts[0]} else{return Err(fail())};
+            let index=|d:&str|[["po","mon"],["ut","tue"],["st","wed"],["ct","thu"],["pa","fri"],["so","sat"],["ne","sun"]].iter().position(|x|x.contains(&d));
             for part in days.split(',') {
                 if let Some((first,last))=part.split_once('-') {let first=index(first).ok_or_else(fail)?;let last=index(last).ok_or_else(fail)?;let mut i=first;loop{a.days[i]=true;if i==last{break}i=(i+1)%7;}}
                 else {a.days[index(part).ok_or_else(fail)?]=true;}
@@ -514,4 +514,17 @@ mod compact_tests {
         let mut saved=Saved::default();saved.snoozed.push(Occurrence{key:alarms[0].key(),name:"Odloženo".into(),at:now+300});
         assert_eq!(upcoming(&alarms,&saved,now,zone,5)[0].name,"Odloženo");
     }
+}
+
+#[cfg(test)]
+mod english_rules {
+ use super::*;
+ #[test]
+ fn english_and_czech_rules_have_identical_schedules() {
+  for (cs,en) in [("Po-Pa","Mon-Fri"),("Po,Ut,So","Mon,Tue,Sat"),("denne","daily"),("vyp","off"),("jednou 2026-12-24","once 2026-12-24"),("mesicne 15","monthly 15"),("rocne 24.12","yearly 24.12"),("dny 2 2026-11-01","days 2 2026-11-01"),("hodiny 6 2026-11-01","hours 6 2026-11-01"),("minuty 30 2026-11-01","minutes 30 2026-11-01"),("Po,St tydny 2 2026-11-02","Mon,Wed weeks 2 2026-11-02")] {
+   let a=parse_alarm(1,"07:00",cs,"Wake").unwrap();
+   let b=parse_alarm(1,"07:00",en,"Wake").unwrap();
+   assert_eq!(serde_json::to_value(a).unwrap(),serde_json::to_value(b).unwrap(),"{en}");
+  }
+ }
 }

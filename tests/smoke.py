@@ -180,3 +180,25 @@ b.call('__on_fetch_response',2,200,0,0);b.tick(300);assert b.fetches[-1].endswit
 b.call('__on_fetch_response',3,200,0,0);b.tap('stop');assert b.fetches[-1].endswith('action=stop')
 g=Device(params={'use_audio_service':True,'gong_enabled':True,'gong_volume':0});g.tick();assert g.fetches[-1].endswith('action=gong&volume=0')
 print('PASS MP3 bridge: POST/loopback/header, volume, alarm/snooze/dismiss, serial stop, error and recovery, mute')
+
+# Check all locales in the actual WASM, including changing language in place.
+translations={
+ 'cz':('neděle · 01. 11. 2026','Světlo','Žádný další budík','Po 7:00','Zvuk: služba nedostupná'),
+ 'en':('Sunday · 01/11/2026','Light','No upcoming alarm','Mon 7:00','Audio service unavailable'),
+ 'de':('Sonntag · 01.11.2026','Licht','Kein nächster Wecker','Mo 7:00','Audiodienst nicht verfügbar'),
+ 'es':('domingo · 01/11/2026','Luz','No hay próxima alarma','Lu 7:00','Servicio de audio no disponible'),
+}
+for lang,(date,light,empty,badge,error) in translations.items():
+ for width,height in [(317,238),(638,238),(638,480),(1280,480)]:
+  d=Device(width,height,params={'language':lang});d.render()
+  for expected in [date,light,empty]:assert expected.encode() in d.tree,(lang,expected)
+  d.change(alarms=[{'time':'7:00','repeat':'Mon-Fri','name':'Wake'}]);d.render();assert badge.encode() in d.tree
+  d.change(use_audio_service=True);d.tap('test')
+  # Config changes can queue stops, so reply to all pending requests before failing the test.
+  for request in range(1,len(d.fetches)+1):d.call('__on_fetch_response',request,503,0,0)
+  d.render();assert error.encode() in d.tree
+  d.change(language='cz');d.render();assert 'neděle'.encode() in d.tree
+ # Localized validation errors, no re-interpretation of user rule syntax.
+ d=Device(params={'language':lang,'alarms':[{'time':'99:99','repeat':'daily','name':'Wake'}]});d.render()
+ if lang!='cz':assert 'Budík 1:'.encode() not in d.tree
+print('PASS four locales: all viewports, dates, controls, English rules, badges, audio errors, validation and live language switch')

@@ -1,3 +1,9 @@
+# Changelog
+
+## 0.6.0 — 2026-11-01
+EN/DE/ES/CZ display and configuration variants, language selector, English alarm
+rule aliases and localized guides. RGB and audio behavior unchanged.
+
 # Historie změn
 
 ## 0.5.1 — 2026-11-01
