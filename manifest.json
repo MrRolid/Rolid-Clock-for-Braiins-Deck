@@ -1,0 +1,304 @@
+{
+  "uid": "484ba68d-7f6b-4ccd-b415-ef64a1f731b1",
+  "version": "0.5.1",
+  "name": "RoliD Clock",
+  "description": "Hodiny, den a datum, pět nejbližších budíků, noční oranžové RGB a půlnoční duha.",
+  "author": {
+    "name": "RoliD"
+  },
+  "binary": "bin/rolid-clock",
+  "category": "clock",
+  "settings": [],
+  "supported_viewports": [
+    {
+      "type": "rectangular",
+      "min_width": 317,
+      "max_width": 1280,
+      "min_height": 238,
+      "max_height": 480
+    }
+  ],
+  "params": {
+    "color": {
+      "name": "Barva času",
+      "description": "HEX RRGGBB nebo #RRGGBB; lze i cyan, white, green, amber, red, blue, purple, pink.",
+      "type": "string",
+      "default_value": "cyan",
+      "max_length": 16
+    },
+    "font_size": {
+      "name": "Velikost času",
+      "description": "24–240 px; v mensim widgetu se prilis velke pismo automaticky zmensi.",
+      "type": "integer",
+      "default_value": 160,
+      "min": 24,
+      "max": 240,
+      "step": 1,
+      "unit": "px"
+    },
+    "show_seconds": {
+      "name": "Zobrazit sekundy",
+      "type": "boolean",
+      "default_value": true
+    },
+    "show_date": {
+      "name": "Zobrazit datum",
+      "type": "boolean",
+      "default_value": true
+    },
+    "date_color": {
+      "name": "Barva řádku den a datum",
+      "description": "HEX RRGGBB nebo #RRGGBB; případně název jako u barvy času.",
+      "type": "string",
+      "default_value": "white",
+      "max_length": 16
+    },
+    "date_size": {
+      "name": "Velikost řádku den a datum",
+      "type": "integer",
+      "default_value": 32,
+      "min": 14,
+      "max": 80,
+      "unit": "px"
+    },
+    "show_weekday": {
+      "name": "Zobrazit dne v týdnu",
+      "type": "boolean",
+      "default_value": true
+    },
+    "show_countdown": {
+      "name": "Zobrazit odpočtu",
+      "type": "boolean",
+      "default_value": true
+    },
+    "countdown_color": {
+      "name": "Barva odpočtu",
+      "description": "HEX RRGGBB nebo #RRGGBB; případně název jako u barvy času.",
+      "type": "string",
+      "default_value": "amber",
+      "max_length": 16
+    },
+    "countdown_size": {
+      "name": "Velikost odpočtu",
+      "type": "integer",
+      "default_value": 26,
+      "min": 14,
+      "max": 56,
+      "unit": "px"
+    },
+    "background_color": {
+      "name": "Barva pozadí",
+      "type": "string",
+      "default_value": "080d16",
+      "max_length": 16
+    },
+    "include_system_alarm": {
+      "name": "Zahrnout vestavěné budíky Decku do odpočtu",
+      "type": "boolean",
+      "default_value": true
+    },
+    "show_test_button": {
+      "name": "Zobrazit tlačítka Světlo, Duha a Zvuk",
+      "type": "boolean",
+      "default_value": true
+    },
+    "sound_verified": {
+      "name": "Vlastní zvuk mám ověřený (skrýt upozornění)",
+      "type": "boolean",
+      "default_value": false,
+      "description": "Pouze skryje upozornění; nezapíná chybějící audio ve firmwaru."
+    },
+    "gong_enabled": {
+      "name": "Gong každou celou hodinu",
+      "type": "boolean",
+      "default_value": false
+    },
+    "gong_volume": {
+      "name": "Hlasitost gongu",
+      "type": "integer",
+      "default_value": 45,
+      "min": 0,
+      "max": 100,
+      "unit": "%"
+    },
+    "gong_start": {
+      "name": "Gong od hodiny včetně",
+      "type": "integer",
+      "default_value": 8,
+      "min": 0,
+      "max": 23
+    },
+    "gong_end": {
+      "name": "Gong do hodiny mimo",
+      "type": "integer",
+      "default_value": 22,
+      "min": 0,
+      "max": 23,
+      "description": "8–22: poslední gong ve 21:00. Stejná hodina od/do znamená celý den. Lze i přes půlnoc."
+    },
+    "gong_quiet_night": {
+      "name": "V nočním režimu gong ztišit úplně",
+      "type": "boolean",
+      "default_value": true
+    },
+    "alarm_volume": {
+      "name": "Hlasitost vlastních budíků",
+      "type": "integer",
+      "default_value": 70,
+      "min": 0,
+      "max": 100,
+      "unit": "%"
+    },
+    "ring_seconds": {
+      "name": "Automatické zastavení budíku",
+      "type": "integer",
+      "default_value": 120,
+      "min": 10,
+      "max": 600,
+      "unit": "s"
+    },
+    "snooze_minutes": {
+      "name": "Odložení budíku",
+      "type": "integer",
+      "default_value": 5,
+      "min": 1,
+      "max": 60,
+      "unit": "min"
+    },
+    "alarms": {
+      "name": "Vlastní budíky (max. 32)",
+      "description": "Čas např. 7:00; opakování Po-Pa, Po,Ut,So, denne nebo vyp. Pokročilé: jednou 2026-12-24; mesicne 15; rocne 24.12; dny 2 2026-11-01; hodiny 6 2026-11-01; minuty 30 2026-11-01; Po,St tydny 2 2026-11-02. Vlastní zvuk vyžaduje nainstalovanou službu rolid-audio.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "fields": {
+          "time": {
+            "name": "Čas",
+            "type": "string",
+            "default_value": "07:00",
+            "max_length": 5
+          },
+          "repeat": {
+            "name": "Opakování",
+            "type": "string",
+            "default_value": "Po-Pa",
+            "max_length": 64
+          },
+          "name": {
+            "name": "Název",
+            "type": "string",
+            "default_value": "Budík",
+            "max_length": 40
+          }
+        }
+      },
+      "max_items": 32,
+      "default_value": []
+    },
+    "hourly_led_enabled": {
+      "name": "Každou hodinu rozsvítit RGB pásek",
+      "type": "boolean",
+      "default_value": true
+    },
+    "led_color": {
+      "name": "Barva RGB pásku",
+      "description": "HEX RRGGBB, např. FFD000 = žlutá.",
+      "type": "string",
+      "default_value": "FFD000",
+      "max_length": 16
+    },
+    "led_effect": {
+      "name": "Efekt RGB pásku",
+      "type": "string",
+      "default_value": "scan",
+      "enum_values": [
+        {
+          "value": "scan",
+          "label": "Přejezd jedním směrem"
+        },
+        {
+          "value": "knight_rider",
+          "label": "Pohyb tam a zpět"
+        },
+        {
+          "value": "breathe",
+          "label": "Pozvolné rozsvícení a zhasnutí"
+        },
+        {
+          "value": "solid",
+          "label": "Stálé světlo"
+        }
+      ]
+    },
+    "led_period_ms": {
+      "name": "Délka jednoho efektu (ms)",
+      "type": "integer",
+      "default_value": 2000,
+      "min": 250,
+      "max": 10000
+    },
+    "led_cycles": {
+      "name": "Počet opakování efektu",
+      "type": "integer",
+      "default_value": 1,
+      "min": 1,
+      "max": 10
+    },
+    "led_start": {
+      "name": "Hodinové světlo od hodiny (včetně)",
+      "type": "integer",
+      "default_value": 8,
+      "min": 0,
+      "max": 23
+    },
+    "led_end": {
+      "name": "Hodinové světlo do hodiny (mimo)",
+      "type": "integer",
+      "default_value": 22,
+      "min": 0,
+      "max": 23
+    },
+    "show_alarm_list": {
+      "name": "Vlevo pět nejbližších zazvonění",
+      "type": "boolean",
+      "default_value": true
+    },
+    "midnight_rainbow": {
+      "name": "O půlnoci duhové střídání barev",
+      "type": "boolean",
+      "default_value": true
+    },
+    "led_all_hours": {
+      "name": "Hodinové světlo po celý den i noc",
+      "type": "boolean",
+      "default_value": true
+    },
+    "night_start": {
+      "name": "Noční RGB od hodiny",
+      "type": "integer",
+      "default_value": 22,
+      "min": 0,
+      "max": 23
+    },
+    "night_end": {
+      "name": "Noční RGB do hodiny",
+      "type": "integer",
+      "default_value": 8,
+      "min": 0,
+      "max": 23
+    },
+    "night_brightness_pct": {
+      "name": "Noční RGB intenzita (%)",
+      "type": "integer",
+      "default_value": 15,
+      "min": 1,
+      "max": 15
+    },
+    "use_audio_service": {
+      "name": "Přehrávat vlastní MP3 přes místní službu",
+      "description": "Vyžaduje jednorázovou instalaci rolid-audio přes SSH. Služba poslouchá pouze uvnitř Decku.",
+      "type": "boolean",
+      "default_value": true
+    }
+  }
+}
