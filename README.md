@@ -7,6 +7,9 @@ upcoming alarms, countdown, hourly RGB effects and custom MP3 chimes.
 Not affiliated with Braiins Forge. Display and settings: English, German,
 Spanish and Czech. License: [GPL-3.0-or-later](LICENSE).
 
+<img width="1280" height="480" alt="rolid-clock-novy" src="https://github.com/user-attachments/assets/e5aea549-e3a3-4ae6-babe-fdcde966ca41" />
+
+
 ## Choose a language
 
 Install **one** package: `rolid-clock-0.6.0-en.nar`, `-de.nar`, `-es.nar` or
